@@ -43,6 +43,11 @@ class StatsClient(object):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._prefix = prefix
 
+    def __del__(self):
+        """Make sure the socket gets closed."""
+        self._sock.close()
+        self._sock = None
+
     def _after(self, data):
         self._send(data)
 
@@ -100,8 +105,8 @@ class StatsClient(object):
         try:
             self._sock.sendto(data.encode('ascii'), self._addr)
         except socket.error:
-            # No time for love, Dr. Jones!
-            pass
+            self._sock.close()
+            self._sock = None
 
 
 class Pipeline(StatsClient):
